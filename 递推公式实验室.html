@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>递推公式实验室 | 两鼠穿墙 + 练习题 + 图像化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #fef0dd, #ffe2c1);
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', cursive;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .lab-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 251, 235, 0.96);
+            border-radius: 80px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            padding: 25px 30px;
+            border: 3px solid #ffdeae;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #ff6f3c;
+            text-shadow: 3px 3px 0 #ffcd94;
+        }
+        .sub {
+            text-align: center;
+            background: #fff0db;
+            display: inline-block;
+            width: auto;
+            margin: 0 auto 20px;
+            padding: 5px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+        }
+        .story-card {
+            background: #fff6e8;
+            border-radius: 60px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 12px solid #ffa559;
+        }
+        .two-col {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        .control-panel {
+            flex: 1.2;
+            background: #fff8ec;
+            border-radius: 60px;
+            padding: 20px;
+            box-shadow: inset 0 0 0 2px #ffe1b0;
+        }
+        .display-panel {
+            flex: 2;
+            background: #fff8ec;
+            border-radius: 60px;
+            padding: 20px;
+            box-shadow: inset 0 0 0 2px #ffe1b0;
+        }
+        .param-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .expr-input, .num-input {
+            width: 100%;
+            padding: 12px 18px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            border: 2px solid #ffbc6e;
+            background: white;
+            font-family: monospace;
+            font-weight: bold;
+            text-align: center;
+        }
+        .preset-section {
+            margin: 15px 0;
+        }
+        .section-title {
+            font-weight: bold;
+            margin: 10px 0 8px;
+            color: #b45f2b;
+        }
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .preset-btn {
+            background: #ffc470;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #a5591e;
+            font-size: 0.9rem;
+        }
+        .apply-btn {
+            background: #48b5b0;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #2a716d;
+        }
+        .bubble-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin: 20px 0;
+            min-height: 100px;
+        }
+        .term-bubble {
+            background: radial-gradient(circle at 30% 30%, #ffecb3, #ffcf7a);
+            padding: 12px 20px;
+            border-radius: 70px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            min-width: 80px;
+            box-shadow: 0 6px 0 #b87a3a;
+        }
+        .formula-box {
+            background: #fdebb5;
+            border-radius: 50px;
+            padding: 12px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .feedback {
+            background: #fff0d6;
+            border-radius: 50px;
+            padding: 10px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        canvas {
+            background: #fff9ed;
+            border-radius: 50px;
+            width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border: 2px solid #ffc87c;
+        }
+        .graph-title {
+            font-weight: bold;
+            margin: 10px 0 5px;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #b45a1c;
+        }
+        button {
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="lab-container">
+    <h1>🐭 递推公式实验室 · 两鼠穿墙 🐭</h1>
+    <div class="sub">🔁 输入递推规则 → 观察数列 & 图像 → 发现通项公式</div>
+
+    <div class="story-card">
+        📜 <strong>《九章算术》· 两鼠穿墙</strong><br>
+        大鼠日自倍，小鼠日自半。递推关系：<strong>大鼠 aₙ = 2·aₙ₋₁</strong>，<strong>小鼠 aₙ = aₙ₋₁ / 2</strong>。<br>
+        🧪 下面还有更多递推练习题，试试修改参数，观察数列和图像的变化！
+    </div>
+
+    <div class="two-col">
+        <!-- 左侧控制区 -->
+        <div class="control-panel">
+            <div class="param-group">
+                <label>📌 首项 a₁ =</label>
+                <input type="number" id="firstTerm" class="num-input" value="1" step="0.5">
+            </div>
+            <div class="param-group">
+                <label>🔁 递推公式 aₙ = （用 prev 表示 aₙ₋₁）</label>
+                <input type="text" id="recurrenceExpr" class="expr-input" value="prev*2" placeholder="例: prev+2, 2*prev, prev/2">
+                <div style="font-size:0.8rem; margin-top:5px;">✨ 支持 + - * / 和数字，prev 代表前一项</div>
+            </div>
+
+            <div class="preset-section">
+                <div class="section-title">🐀 经典两鼠穿墙</div>
+                <div class="preset-buttons">
+                    <button class="preset-btn" data-expr="prev*2" data-first="1">大鼠 (×2)</button>
+                    <button class="preset-btn" data-expr="prev/2" data-first="1">小鼠 (÷2)</button>
+                </div>
+            </div>
+
+            <div class="preset-section">
+                <div class="section-title">📚 递推练习题</div>
+                <div class="preset-buttons" id="exercisePresets">
+                    <!-- 动态生成也会保留，但直接写按钮 -->
+                    <button class="preset-btn" data-expr="prev+3" data-first="2">等差 +3 (2,5,8,...)</button>
+                    <button class="preset-btn" data-expr="-2*prev" data-first="1">摆动乘 -2 (1,-2,4,...)</button>
+                    <button class="preset-btn" data-expr="prev/2+1" data-first="4">递推 aₙ = aₙ₋₁/2+1</button>
+                    <button class="preset-btn" data-expr="0.5*prev+2" data-first="10">线性递推 0.5×前项+2</button>
+                    <button class="preset-btn" data-expr="prev+prev" data-first="1">自身加倍 (prev+prev)</button>
+                </div>
+            </div>
+
+            <button id="applyBtn" class="apply-btn">✨ 生成数列 & 更新图像 ✨</button>
+            <div class="feedback" id="infoMsg">💡 试试修改递推公式或点击练习题，观察数列和折线图的变化！</div>
+        </div>
+
+        <!-- 右侧展示区 -->
+        <div class="display-panel">
+            <div style="font-weight:bold; font-size:1.2rem;">📊 数列前8项</div>
+            <div id="bubblesContainer" class="bubble-list">✨ 点击上方按钮生成 ✨</div>
+            
+            <div class="graph-title">📈 数列图像（前8项）</div>
+            <canvas id="sequenceCanvas" width="600" height="200" style="width:100%; height:auto; max-height:200px"></canvas>
+            
+            <div class="formula-box" id="generalFormulaBox">
+                🌟 通项公式探索 🌟<br>
+                <span id="generalFormulaText">尚未生成数列</span>
+            </div>
+            <div class="formula-box" id="recurrenceRelationBox">
+                🔄 递推关系<br>
+                <span id="recurrenceRelationText">—</span>
+            </div>
+            <button id="nextTermBtn" style="background:#ffaa44; border:none; padding:8px 20px; border-radius:40px; font-weight:bold; cursor:pointer;">➕ 增加一项 (继续推算)</button>
+        </div>
+    </div>
+    <footer>🧪 实验目标：发现递推公式 → 观察数列规律 → 图像直观展示变化趋势。线性递推可自动推导通项公式！</footer>
+</div>
+
+<script>
+    // ---------- 递推计算与通项推导工具 ----------
+    let currentSeq = [];       // 存储数列值
+    let currentRecurrenceExpr = "prev*2";
+    let currentA1 = 1;
+    const MAX_TERMS = 12;      // 内部最多计算12项，展示8项，图像也取前8项
+
+    // DOM 元素
+    const firstTermInput = document.getElementById('firstTerm');
+    const recurrenceExprInput = document.getElementById('recurrenceExpr');
+    const applyBtn = document.getElementById('applyBtn');
+    const bubblesContainer = document.getElementById('bubblesContainer');
+    const generalFormulaSpan = document.getElementById('generalFormulaText');
+    const recurrenceRelationSpan = document.getElementById('recurrenceRelationText');
+    const infoMsg = document.getElementById('infoMsg');
+    const nextTermBtn = document.getElementById('nextTermBtn');
+    const sequenceCanvas = document.getElementById('sequenceCanvas');
+
+    // 安全计算表达式 (允许 prev 变量)
+    function evaluateRecurrence(expr, prevVal) {
+        try {
+            let sanitized = expr.replace(/prev/gi, `(${prevVal})`);
+            if (!/^[\d\s+\-*/()\.]+$/.test(sanitized)) {
+                throw new Error("表达式包含非法字符");
+            }
+            const fn = new Function('return (' + sanitized + ')');
+            let val = fn();
+            if (isNaN(val) || !isFinite(val)) throw new Error();
+            return val;
+        } catch(e) {
+            return null;
+        }
+    }
+
+    // 生成数列（从 a1 开始，根据递推表达式生成最多 n 项）
+    function generateSequence(a1, expr, n = MAX_TERMS) {
+        let seq = [a1];
+        for (let i = 2; i <= n; i++) {
+            let nextVal = evaluateRecurrence(expr, seq[seq.length-1]);
+            if (nextVal === null) {
+                seq.push(NaN);
+                break;
+            }
+            seq.push(nextVal);
+        }
+        return seq;
+    }
+
+    // 解析线性递推系数: aₙ = k * aₙ₋₁ + b
+    function parseLinearCoefficients(expr) {
+        let s = expr.replace(/\s/g, '');
+        let match = s.match(/^([+-]?\d*\.?\d*)\*prev([+-]\d+\.?\d*)?$/);
+        if (match) {
+            let k = match[1] === '' || match[1] === '+' ? 1 : (match[1] === '-' ? -1 : parseFloat(match[1]));
+            let b = match[2] ? parseFloat(match[2]) : 0;
+            return { k, b };
+        }
+        let simpleMatch = s.match(/^prev([+-]\d+\.?\d*)?$/);
+        if (simpleMatch) {
+            let k = 1;
+            let b = simpleMatch[1] ? parseFloat(simpleMatch[1]) : 0;
+            return { k, b };
+        }
+        let onlyK = s.match(/^([+-]?\d*\.?\d*)\*prev$/);
+        if (onlyK) {
+            let k = onlyK[1] === '' || onlyK[1] === '+' ? 1 : (onlyK[1] === '-' ? -1 : parseFloat(onlyK[1]));
+            return { k, b: 0 };
+        }
+        return null;
+    }
+
+    // 根据线性系数和首项生成通项公式字符串（美化版）
+    function generateGeneralFormula(a1, k, b) {
+        if (Math.abs(k - 1) < 1e-9) {
+            if (Math.abs(b) < 1e-9) return `aₙ = ${a1} (常数列)`;
+            let d = b;
+            let dStr = d === 1 ? '' : (d === -1 ? '-' : d);
+            if (a1 === 0) return `aₙ = ${dStr !== '' ? dStr : ''}·(n-1)`.replace('·', '');
+            let sign = (d > 0 && a1 !== 0) ? '+' : (d < 0 ? '-' : '');
+            let absD = Math.abs(d);
+            let dPart = absD === 1 ? '' : absD;
+            if (sign === '-') return `aₙ = ${a1} - ${dPart !== '' ? dPart : ''}·(n-1)`.replace('- -', '-');
+            return `aₙ = ${a1} + ${dPart !== '' ? dPart : ''}·(n-1)`.replace('+ -', '- ');
+        } else {
+            if (Math.abs(b) < 1e-9) {
+                return `aₙ = ${a1} · ${k}^{n-1}`;
+            } else {
+                if (Math.abs(k-1) < 1e-9) return `aₙ = ${a1} + ${b}·(n-1)`;
+                let kPow = `${k}^{n-1}`;
+                let part2 = ` + ${b}·(${kPow} - 1) / (${k} - 1)`;
+                if (a1 === 0) return `aₙ = ${b}·(${kPow} - 1) / (${k} - 1)`;
+                return `aₙ = ${a1}·${kPow}${part2}`;
+            }
+        }
+    }
+
+    // 绘制折线图（取前8项，如不足8项则取全部）
+    function drawSequencePlot(seq) {
+        const canvas = sequenceCanvas;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        canvas.width = w;
+        canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+        if (!seq.length || seq.some(v => isNaN(v))) {
+            ctx.fillStyle = "#b87333";
+            ctx.font = "bold 14px 'Comic Neue'";
+            ctx.fillText("数列值无法绘制，请检查递推式", 20, 50);
+            return;
+        }
+        const padding = 40;
+        const n = Math.min(seq.length, 8);
+        const values = seq.slice(0, n);
+        const minVal = Math.min(...values, 0);
+        const maxVal = Math.max(...values, 1);
+        const range = maxVal - minVal === 0 ? 1 : maxVal - minVal;
+        const xs = [];
+        const ys = [];
+        for (let i = 0; i < n; i++) {
+            const x = padding + (i / (n-1)) * (w - 2*padding);
+            const y = h - padding - (values[i] - minVal) / range * (h - 2*padding);
+            xs.push(x);
+            ys.push(y);
+        }
+        // 画折线
+        ctx.beginPath();
+        ctx.strokeStyle = "#f0822c";
+        ctx.lineWidth = 3;
+        ctx.moveTo(xs[0], ys[0]);
+        for (let i = 1; i < xs.length; i++) ctx.lineTo(xs[i], ys[i]);
+        ctx.stroke();
+        // 画点和标注
+        for (let i = 0; i < xs.length; i++) {
+            ctx.beginPath();
+            ctx.arc(xs[i], ys[i], 7, 0, 2*Math.PI);
+            ctx.fillStyle = "#ffb45e";
+            ctx.fill();
+            ctx.fillStyle = "#3f2c17";
+            ctx.font = "bold 12px 'Comic Neue'";
+            ctx.fillText(`${values[i]}`, xs[i]-15, ys[i]-8);
+            ctx.fillStyle = "#ab6a2a";
+            ctx.fillText(`n=${i+1}`, xs[i]-12, ys[i]+16);
+        }
+        ctx.fillStyle = "#b45b1a";
+        ctx.font = "bold 12px monospace";
+        ctx.fillText("项数 n →", w-55, h-10);
+    }
+
+    // 更新整个界面（数列、通项、图像）
+    function updateDisplay() {
+        let seq = generateSequence(currentA1, currentRecurrenceExpr, MAX_TERMS);
+        currentSeq = seq;
+        // 渲染气泡（前8项）
+        if (seq.length === 0 || isNaN(seq[0])) {
+            bubblesContainer.innerHTML = '<div style="color:#c0392b">⚠️ 递推公式无效，请检查表达式 ⚠️</div>';
+            generalFormulaSpan.innerText = '公式无效';
+            recurrenceRelationSpan.innerText = currentRecurrenceExpr;
+            drawSequencePlot([]);
+            return;
+        }
+        let html = '';
+        let showCount = Math.min(seq.length, 8);
+        for (let i = 0; i < showCount; i++) {
+            let val = seq[i];
+            if (isNaN(val)) {
+                html += `<div class="term-bubble">a<sub>${i+1}</sub><span> ?</span></div>`;
+            } else {
+                html += `<div class="term-bubble">a<sub>${i+1}</sub><span> ${val}</span></div>`;
+            }
+        }
+        bubblesContainer.innerHTML = html;
+        recurrenceRelationSpan.innerText = `aₙ = ${currentRecurrenceExpr.replace(/prev/g, 'aₙ₋₁')}`;
+
+        // 尝试推导通项公式
+        let coeff = parseLinearCoefficients(currentRecurrenceExpr);
+        if (coeff && isFinite(coeff.k) && isFinite(coeff.b) && !isNaN(currentA1)) {
+            let formula = generateGeneralFormula(currentA1, coeff.k, coeff.b);
+            generalFormulaSpan.innerHTML = formula;
+        } else {
+            generalFormulaSpan.innerHTML = "🔍 当前递推式较复杂，无法直接给出通项公式。试试线性递推（如 prev+2, 2*prev, 2*prev+1）";
+        }
+        // 绘制图像（取前8项有效值）
+        drawSequencePlot(seq);
+        infoMsg.innerHTML = "✅ 数列已更新！点击「增加一项」可以继续向后推算。";
+    }
+
+    // 增加一项（在现有数列基础上继续往后推一项）
+    function addOneTerm() {
+        if (currentSeq.length === 0 || isNaN(currentSeq[0])) {
+            infoMsg.innerHTML = "⚠️ 请先生成有效数列 ⚠️";
+            return;
+        }
+        let lastVal = currentSeq[currentSeq.length-1];
+        let nextVal = evaluateRecurrence(currentRecurrenceExpr, lastVal);
+        if (nextVal === null || isNaN(nextVal)) {
+            infoMsg.innerHTML = "⚠️ 无法继续推算，请检查递推公式 ⚠️";
+            return;
+        }
+        currentSeq.push(nextVal);
+        // 重新渲染气泡（只显示前10项）
+        let showCount = Math.min(currentSeq.length, 10);
+        let html = '';
+        for (let i = 0; i < showCount; i++) {
+            let val = currentSeq[i];
+            html += `<div class="term-bubble">a<sub>${i+1}</sub><span> ${val}</span></div>`;
+        }
+        if (currentSeq.length > 10) html += `<div class="term-bubble">...</div>`;
+        bubblesContainer.innerHTML = html;
+        drawSequencePlot(currentSeq);
+        infoMsg.innerHTML = `✨ 已增加第 ${currentSeq.length} 项 (${nextVal}) ✨`;
+    }
+
+    // 应用用户输入的参数
+    function applySettings() {
+        let a1 = parseFloat(firstTermInput.value);
+        if (isNaN(a1)) a1 = 1;
+        let expr = recurrenceExprInput.value.trim();
+        if (expr === "") expr = "prev*2";
+        currentA1 = a1;
+        currentRecurrenceExpr = expr;
+        updateDisplay();
+    }
+
+    // 预设按钮事件
+    function setupPresets() {
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                let expr = btn.getAttribute('data-expr');
+                let first = parseFloat(btn.getAttribute('data-first'));
+                if (!isNaN(first)) firstTermInput.value = first;
+                recurrenceExprInput.value = expr;
+                applySettings();
+            });
+        });
+    }
+
+    applyBtn.addEventListener('click', applySettings);
+    nextTermBtn.addEventListener('click', addOneTerm);
+
+    // 初始化默认（大鼠穿墙）
+    function init() {
+        firstTermInput.value = "1";
+        recurrenceExprInput.value = "prev*2";
+        applySettings();
+        setupPresets();
+    }
+    init();
+</script>
+</body>
+</html>

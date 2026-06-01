@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>数列概念实验 | 直播间顺序不能乱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(145deg, #fdefcf, #ffdead);
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', cursive;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 251, 235, 0.95);
+            border-radius: 70px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            border: 3px solid #ffdeae;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #ff6f3c;
+            text-shadow: 3px 3px 0 #ffcd94;
+        }
+        .sub {
+            text-align: center;
+            background: #fff0db;
+            width: fit-content;
+            margin: 10px auto 20px;
+            padding: 8px 25px;
+            border-radius: 40px;
+            font-weight: bold;
+        }
+        .story {
+            background: #fee3b5;
+            border-radius: 50px;
+            padding: 15px 25px;
+            margin: 20px 0;
+            font-size: 1rem;
+            line-height: 1.4;
+            border-left: 12px solid #ffa559;
+        }
+        .sequence-box {
+            background: #fff8ec;
+            border-radius: 60px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: inset 0 0 0 3px #ffe1b0, 0 10px 15px rgba(0,0,0,0.05);
+        }
+        .bubbles {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+            margin: 20px 0;
+        }
+        .bubble {
+            background: radial-gradient(circle at 30% 30%, #ffecb3, #ffcf7a);
+            padding: 16px 20px;
+            border-radius: 90px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+            box-shadow: 0 8px 0 #b87a3a;
+            cursor: pointer;
+            transition: 0.07s linear;
+        }
+        .bubble.selected {
+            background: #ffb347;
+            box-shadow: 0 0 0 4px #fff0b5, 0 8px 0 #9b5e1a;
+            transform: scale(1.02);
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background: #ffaa44;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #a55d1c;
+            font-family: inherit;
+            transition: 0.05s linear;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #a55d1c;
+        }
+        .feedback {
+            background: #fff0d6;
+            border-radius: 50px;
+            padding: 14px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .conclusion {
+            background: #d9e6b3;
+            border-radius: 40px;
+            padding: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #b45a1c;
+        }
+        @media (max-width: 650px) {
+            .bubble { font-size: 1.1rem; padding: 8px 12px; min-width: 60px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📺 直播间 · 数列顺序实验室</h1>
+    <div class="sub">🎬 电商专业情境：单位时间累计观看人数</div>
+    <div class="story">
+        🧧 某直播间开播后，按<strong>单位时间</strong>（每1小时）记录的累计观看人数（单位：百人）如下：<br>
+        <strong>75 , 86 , 110 , 116 , 128 , 135 , 153 , 162 , 165 , 168</strong><br>
+        这些数字按照时间先后顺序排列，构成了一个数列。<br>
+        💡 <strong>思考</strong>：如果随意交换其中两个单位时间的数据，还能真实反映观众增长趋势吗？
+    </div>
+
+    <div class="sequence-box">
+        <div style="font-size:1.3rem; font-weight:bold;">🔽 当前数列（按单位时间顺序）</div>
+        <div class="bubbles" id="bubbleContainer"></div>
+        <div class="button-group">
+            <button id="swapBtn">❌ 取消选中</button>
+            <button id="resetBtn">🔁 重置为原始顺序</button>
+        </div>
+        <div id="feedback" class="feedback">✨ 点击任意两个气泡，它们会直接交换位置 ✨</div>
+        <div class="conclusion" id="conclusion">
+            💡 结论：数列中的数必须按照<strong>确定的顺序</strong>排列，不能随意调换位置。
+        </div>
+    </div>
+    <footer>🧪 实验小结：调换顺序后，数列就失去了原本的时间意义 —— 这就是“数列”与“集合”的根本区别。</footer>
+</div>
+
+<script>
+    // 原始数列（单位时间累计观看人数，10项）
+    const originalSeq = [75, 86, 110, 116, 128, 135, 153, 162, 165, 168];
+    let currentSeq = [...originalSeq];
+    let selectedIndex = null;
+
+    function render() {
+        const container = document.getElementById('bubbleContainer');
+        container.innerHTML = '';
+        currentSeq.forEach((value, idx) => {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            if (selectedIndex === idx) bubble.classList.add('selected');
+            bubble.textContent = value;
+            bubble.onclick = () => {
+                if (selectedIndex === null) {
+                    selectedIndex = idx;
+                    render();
+                    document.getElementById('feedback').innerHTML = `✅ 已选中第 ${idx+1} 个单位时间 (${value})，再点击另一个气泡，会自动交换`;
+                } else if (selectedIndex === idx) {
+                    selectedIndex = null;
+                    render();
+                    document.getElementById('feedback').innerHTML = `✨ 已取消选中，可以重新选择 ✨`;
+                } else {
+                    // 交换两个位置的值
+                    [currentSeq[selectedIndex], currentSeq[idx]] = [currentSeq[idx], currentSeq[selectedIndex]];
+                    const msg = `🔁 已将第 ${selectedIndex+1} 项与第 ${idx+1} 项交换！现在的数列顺序已经改变。`;
+                    document.getElementById('feedback').innerHTML = msg;
+                    selectedIndex = null;
+                    render();
+                    const conclusionDiv = document.getElementById('conclusion');
+                    conclusionDiv.style.background = "#ffe0a3";
+                    conclusionDiv.innerHTML = "⚠️ 注意：交换顺序后的数列不再代表真实的单位时间观众增长趋势！<br> ✅ 数列的项必须保持「确定的顺序」，这是数列的核心特征。";
+                    setTimeout(() => {
+                        conclusionDiv.style.background = "#d9e6b3";
+                        conclusionDiv.innerHTML = "💡 结论：数列中的数必须按照<strong>确定的顺序</strong>排列，不能随意调换位置。";
+                    }, 4000);
+                }
+            };
+            container.appendChild(bubble);
+        });
+    }
+
+    function resetSequence() {
+        currentSeq = [...originalSeq];
+        selectedIndex = null;
+        render();
+        document.getElementById('feedback').innerHTML = "✨ 已恢复原始顺序。数列必须按照单位时间真实顺序排列，不可随意调换。";
+        const conclusionDiv = document.getElementById('conclusion');
+        conclusionDiv.style.background = "#d9e6b3";
+        conclusionDiv.innerHTML = "💡 结论：数列中的数必须按照<strong>确定的顺序</strong>排列，不能随意调换位置。";
+    }
+
+    document.getElementById('swapBtn').onclick = () => {
+        if (selectedIndex !== null) {
+            selectedIndex = null;
+            render();
+            document.getElementById('feedback').innerHTML = "✨ 已取消选中，可以重新选择两个气泡进行交换实验。";
+        } else {
+            document.getElementById('feedback').innerHTML = "没有选中的气泡，请先点击一个气泡。";
+        }
+    };
+    document.getElementById('resetBtn').addEventListener('click', resetSequence);
+    render();
+</script>
+</body>
+</html>

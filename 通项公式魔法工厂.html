@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>通项公式魔法工厂 | 发现规律 + 猜通项</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #fff0d4, #ffe0b5);
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', cursive;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .magic-lab {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 251, 235, 0.95);
+            border-radius: 80px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            padding: 25px 30px;
+            border: 3px solid #ffdeae;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #ff6f3c;
+            text-shadow: 3px 3px 0 #ffcd94;
+        }
+        .sub {
+            text-align: center;
+            background: #fff0db;
+            display: inline-block;
+            width: auto;
+            margin: 0 auto 20px;
+            padding: 5px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+        }
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background: #fff3e2;
+            border-radius: 70px;
+            padding: 12px 25px;
+            margin-bottom: 25px;
+        }
+        .score-area {
+            background: #ffcf7a;
+            border-radius: 50px;
+            padding: 8px 25px;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        .progress {
+            background: #f2cf9b;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+        }
+        .reset-btn {
+            background: #ffaa44;
+            border: none;
+            padding: 8px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #a55d1c;
+        }
+        .question-card {
+            background: #fffaf0;
+            border-radius: 70px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 15px 0 #e2bc7c;
+            text-align: center;
+        }
+        .seq-bubble {
+            background: radial-gradient(circle at 30% 30%, #ffecb3, #ffcf7a);
+            display: inline-block;
+            padding: 20px 35px;
+            border-radius: 100px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 0 #b87a3a;
+        }
+        .discover-hint {
+            background: #ffe0b5;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .options-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+            margin: 20px 0;
+        }
+        .opt-btn {
+            background: #ffe0a3;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.05s linear;
+            font-family: monospace;
+            box-shadow: 0 3px 0 #b87a3a;
+        }
+        .opt-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #b87a3a;
+        }
+        .opt-btn.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .action-btn {
+            background: #48b5b0;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 35px;
+            border-radius: 60px;
+            cursor: pointer;
+            color: white;
+            margin-top: 15px;
+            box-shadow: 0 5px 0 #2a716d;
+        }
+        .feedback {
+            background: #fff0d6;
+            border-radius: 50px;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #b45a1c;
+        }
+    </style>
+</head>
+<body>
+<div class="magic-lab">
+    <h1>🔮 通项公式魔法工厂</h1>
+    <div style="text-align: center;"><span class="sub">✨ 观察数列 → 发现规律 → 选择通项公式 ✨</span></div>
+
+    <div class="dashboard">
+        <div class="score-area">🏆 得分：<span id="scoreValue">0</span> 分</div>
+        <div class="progress">📋 进度：第 <span id="currentIdx">1</span> / <span id="totalQ">10</span> 题</div>
+        <button id="resetGameBtn" class="reset-btn">🔄 重新开始</button>
+    </div>
+
+    <div class="question-card">
+        <div class="seq-bubble" id="sequenceDisplay">加载中...</div>
+        <div class="discover-hint" id="discoverHint">✨ 发现规律：?</div>
+        <div class="options-area" id="optionsContainer"></div>
+        <button id="nextBtn" class="action-btn">🎲 下一题 🎲</button>
+        <div id="feedbackMsg" class="feedback">🔍 选择正确的通项公式，每个答对得10分！</div>
+    </div>
+    <footer>💡 小贴士：通项公式能直接求任意项，递推公式需要逐项推算。两者是数列的“魔法双胞胎”！</footer>
+</div>
+
+<script>
+    // 题库（10道题，难度适中）
+    const QUESTION_SET = [
+        { seq: "1, 2, 4, 8, 16, ...", options: ["aₙ = 2ⁿ⁻¹", "aₙ = n²", "aₙ = 2n", "aₙ = n + 1"], correct: "aₙ = 2ⁿ⁻¹", discover: "🔎 后一项总是前一项的2倍 → 公比为2的等比数列，首项1。" },
+        { seq: "1, 3, 9, 27, 81, ...", options: ["aₙ = 3n", "aₙ = 3ⁿ⁻¹", "aₙ = n³", "aₙ = 3n - 2"], correct: "aₙ = 3ⁿ⁻¹", discover: "🔎 每次乘以3 → 谢尔宾斯基三角形着色个数。" },
+        { seq: "1, 3, 5, 7, 9, ...", options: ["aₙ = 2n", "aₙ = 2n - 1", "aₙ = n + 2", "aₙ = n²"], correct: "aₙ = 2n - 1", discover: "🔎 相邻两项差为2 → 奇数数列。" },
+        { seq: "2, 4, 6, 8, 10, ...", options: ["aₙ = 2n", "aₙ = n + 1", "aₙ = 2n - 1", "aₙ = n²"], correct: "aₙ = 2n", discover: "🔎 相邻差2，首项2 → 正偶数。" },
+        { seq: "1, 4, 9, 16, 25, ...", options: ["aₙ = n²", "aₙ = 2n²", "aₙ = n² + 1", "aₙ = (n+1)²"], correct: "aₙ = n²", discover: "🔎 1², 2², 3², 4²… 完全平方数。" },
+        { seq: "1, 1, 2, 3, 5, 8, ...", options: ["aₙ = n", "aₙ = Fₙ (斐波那契)", "aₙ = 2ⁿ⁻¹", "aₙ = n² - n + 1"], correct: "aₙ = Fₙ (斐波那契)", discover: "🔎 从第三项起，每项是前两项之和 → 兔子数列。" },
+        { seq: "1, 1/2, 1/4, 1/8, 1/16, ...", options: ["aₙ = 2ⁿ", "aₙ = (1/2)ⁿ⁻¹", "aₙ = 1/(2n)", "aₙ = 1/n"], correct: "aₙ = (1/2)ⁿ⁻¹", discover: "🔎 后一项是前一项的一半 → 公比1/2，首项1。" },
+        { seq: "2, 5, 8, 11, 14, ...", options: ["aₙ = 3n - 1", "aₙ = 3n + 2", "aₙ = 2n + 1", "aₙ = n + 1"], correct: "aₙ = 3n - 1", discover: "🔎 相邻差3，首项2 → 等差数列。" },
+        { seq: "3, 6, 12, 24, 48, ...", options: ["aₙ = 3·2ⁿ⁻¹", "aₙ = 3n", "aₙ = 2ⁿ + 1", "aₙ = 3n²"], correct: "aₙ = 3·2ⁿ⁻¹", discover: "🔎 后一项是前一项的2倍，首项3 → 公比2的等比数列。" },
+        { seq: "1, -1, 1, -1, 1, ...", options: ["aₙ = (-1)ⁿ", "aₙ = (-1)ⁿ⁻¹", "aₙ = (-2)ⁿ", "aₙ = cos(nπ)"], correct: "aₙ = (-1)ⁿ⁻¹", discover: "🔎 奇数项为1，偶数项为-1 → 摆动数列。" }
+    ];
+
+    const total = QUESTION_SET.length;
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let currentCorrectAnswer = "";
+
+    // DOM 元素
+    const seqDisplay = document.getElementById('sequenceDisplay');
+    const discoverHint = document.getElementById('discoverHint');
+    const optionsDiv = document.getElementById('optionsContainer');
+    const nextBtn = document.getElementById('nextBtn');
+    const feedbackDiv = document.getElementById('feedbackMsg');
+    const scoreSpan = document.getElementById('scoreValue');
+    const currentIdxSpan = document.getElementById('currentIdx');
+    const totalQSpan = document.getElementById('totalQ');
+    const resetBtn = document.getElementById('resetGameBtn');
+
+    function updateUI() {
+        scoreSpan.innerText = score;
+        currentIdxSpan.innerText = currentIndex + 1;
+        totalQSpan.innerText = total;
+    }
+
+    function loadQuestion() {
+        if (currentIndex >= total) {
+            seqDisplay.innerText = "🎉 恭喜通关！ 🎉";
+            discoverHint.innerText = "✨ 你已掌握通项公式的魔法 ✨";
+            optionsDiv.innerHTML = "";
+            nextBtn.disabled = true;
+            feedbackDiv.innerHTML = "🏆 太厉害了！点击「重新开始」继续挑战 🏆";
+            return;
+        }
+        const q = QUESTION_SET[currentIndex];
+        seqDisplay.innerText = q.seq;
+        discoverHint.innerText = q.discover;
+        currentCorrectAnswer = q.correct;
+
+        optionsDiv.innerHTML = '';
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.textContent = opt;
+            btn.classList.add('opt-btn');
+            btn.onclick = () => {
+                if (answered) {
+                    feedbackDiv.innerHTML = "⏳ 本题已完成，请点击「下一题」继续！";
+                    return;
+                }
+                if (opt === currentCorrectAnswer) {
+                    score += 10;
+                    updateUI();
+                    feedbackDiv.innerHTML = `✅ 完全正确！ ${currentCorrectAnswer} ✅<br>💡 ${q.discover}`;
+                    feedbackDiv.style.background = "#d9f0c5";
+                    answered = true;
+                } else {
+                    feedbackDiv.innerHTML = `❌ 错误！ “${opt}” 不对。 正确答案是 ${currentCorrectAnswer}。 ${q.discover} ❌`;
+                    feedbackDiv.style.background = "#ffdeda";
+                    answered = true;
+                }
+                document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.add('disabled'));
+            };
+            optionsDiv.appendChild(btn);
+        });
+        answered = false;
+        document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('disabled'));
+        feedbackDiv.innerHTML = "🔍 观察数列，发现规律，选出一个正确的通项公式吧！";
+        feedbackDiv.style.background = "#fff0d6";
+    }
+
+    function nextQuestion() {
+        if (!answered) {
+            feedbackDiv.innerHTML = "⚠️ 请先回答当前题目，再进入下一题 ⚠️";
+            return;
+        }
+        if (currentIndex + 1 < total) {
+            currentIndex++;
+            loadQuestion();
+            updateUI();
+        } else if (currentIndex + 1 === total) {
+            currentIndex++;
+            loadQuestion();
+            updateUI();
+        } else {
+            if (currentIndex >= total) {
+                feedbackDiv.innerHTML = "🏆 已经通关啦！点击「重新开始」继续挑战吧 🏆";
+            }
+        }
+    }
+
+    function resetGame() {
+        currentIndex = 0;
+        score = 0;
+        answered = false;
+        updateUI();
+        loadQuestion();
+        nextBtn.disabled = false;
+        feedbackDiv.innerHTML = "🔍 新的一轮！选择正确的通项公式～";
+        feedbackDiv.style.background = "#fff0d6";
+    }
+
+    nextBtn.addEventListener('click', nextQuestion);
+    resetBtn.addEventListener('click', resetGame);
+    resetGame();
+</script>
+</body>
+</html>

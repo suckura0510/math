@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>数列知识连连看 | 配对记录区</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(145deg, #fef0dd, #ffe2c1);
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', cursive;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 251, 235, 0.96);
+            border-radius: 80px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            padding: 25px 30px;
+            border: 3px solid #ffdeae;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #ff6f3c;
+            text-shadow: 3px 3px 0 #ffcd94;
+        }
+        .sub {
+            text-align: center;
+            background: #fff0db;
+            display: inline-block;
+            width: auto;
+            margin: 0 auto 20px;
+            padding: 5px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+        }
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background: #fff3e2;
+            border-radius: 70px;
+            padding: 12px 25px;
+            margin-bottom: 25px;
+        }
+        .score-area {
+            background: #ffcf7a;
+            border-radius: 50px;
+            padding: 8px 25px;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        .progress {
+            background: #f2cf9b;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+        }
+        .reset-btn {
+            background: #ffaa44;
+            border: none;
+            padding: 8px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #a55d1c;
+        }
+        .game-board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .card-deck {
+            flex: 1;
+            min-width: 280px;
+            background: #fff8ec;
+            border-radius: 60px;
+            padding: 20px;
+            box-shadow: inset 0 0 0 2px #ffe1b0;
+        }
+        .deck-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            min-height: 400px;
+        }
+        .card {
+            background: radial-gradient(circle at 30% 30%, #ffecb3, #ffcf7a);
+            border-radius: 50px;
+            padding: 14px 18px;
+            width: 220px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.07s linear;
+            box-shadow: 0 6px 0 #b87a3a;
+            font-size: 1rem;
+        }
+        .card.selected {
+            background: #ffb347;
+            box-shadow: 0 0 0 4px #fff0b5, 0 6px 0 #9b5e1a;
+            transform: scale(1.02);
+        }
+        /* 匹配记录区 */
+        .matched-area {
+            margin-top: 30px;
+            background: #fff8ec;
+            border-radius: 60px;
+            padding: 20px;
+            box-shadow: inset 0 0 0 2px #ffe1b0;
+        }
+        .matched-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .matched-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .matched-item {
+            background: #b8e0b8;
+            border-radius: 50px;
+            padding: 8px 18px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .matched-pair {
+            color: #2c542c;
+        }
+        .matched-arrow {
+            font-size: 1.2rem;
+        }
+        .feedback {
+            background: #fff0d6;
+            border-radius: 50px;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #b45a1c;
+        }
+        .win-toast {
+            position: fixed;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c2b26;
+            color: #ffeaac;
+            padding: 16px 32px;
+            border-radius: 80px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 200;
+            animation: pop 0.25s ease;
+            white-space: nowrap;
+            border: 3px solid gold;
+        }
+        @keyframes pop {
+            from { opacity: 0; transform: translateX(-50%) scale(0.8);}
+            to { opacity: 1; transform: translateX(-50%) scale(1);}
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>🧩 数列知识连连看</h1>
+    <div class="sub">✨ 点击左边名词，再点击右边定义，配对成功会移入下方“成功配对区” ✨</div>
+
+    <div class="dashboard">
+        <div class="score-area">🏆 配对成功 <span id="matchedCount">0</span> / <span id="totalPairs">0</span></div>
+        <div class="progress">📋 进度 <span id="progressPercent">0</span>%</div>
+        <button id="resetBtn" class="reset-btn">🔄 重新洗牌</button>
+    </div>
+
+    <div class="game-board">
+        <div class="card-deck">
+            <div class="deck-title">📖 名词 / 概念</div>
+            <div id="leftCards" class="cards"></div>
+        </div>
+        <div class="card-deck">
+            <div class="deck-title">📚 定义 / 例子</div>
+            <div id="rightCards" class="cards"></div>
+        </div>
+    </div>
+
+    <!-- 成功配对记录区 -->
+    <div class="matched-area">
+        <div class="matched-title">🏅 成功配对记录区 🏅</div>
+        <div id="matchedList" class="matched-list">
+            <div style="color:#b87a3a; text-align:center; width:100%;">暂无配对，快来挑战吧！</div>
+        </div>
+    </div>
+
+    <div id="feedbackMsg" class="feedback">✨ 点击左边一项，再点击右边一项，配对正确即移入下方记录区！</div>
+    <footer>💡 复习要点：数列定义、分类、通项公式、递推公式、相关情境（直播间、两鼠穿墙等）</footer>
+</div>
+
+<script>
+    // 题库（名词和对应定义/例子）共12对
+    const PAIRS = [
+        { left: "数列的定义", right: "按照确定的顺序排列的一列数" },
+        { left: "有穷数列", right: "项数有限的数列，如：2,4,6,8,10" },
+        { left: "无穷数列", right: "项数无限的数列，如：1,3,5,7,..." },
+        { left: "递增数列", right: "从第2项起，每一项都大于它的前一项" },
+        { left: "递减数列", right: "从第2项起，每一项都小于它的前一项" },
+        { left: "常数列", right: "各项都相等的数列，如：7,7,7,7" },
+        { left: "摆动数列", right: "正负交替或大小交替的数列，如：1,-1,1,-1" },
+        { left: "通项公式", right: "表示第n项与序号n之间关系的式子，如 aₙ = 2n" },
+        { left: "递推公式", right: "表示相邻几项之间关系的式子，如 aₙ = aₙ₋₁ + 2" },
+        { left: "两鼠穿墙 (大鼠)", right: "递推：aₙ = 2·aₙ₋₁，首项1" },
+        { left: "两鼠穿墙 (小鼠)", right: "递推：aₙ = aₙ₋₁ / 2，首项1" },
+        { left: "直播间累计观看", right: "有穷数列：75,86,110,...,168（10项）" }
+    ];
+
+    let leftItems = [];     // 未匹配的左侧项 { id, text, pairId }
+    let rightItems = [];    // 未匹配的右侧项 { id, text, pairId }
+    let matchedPairs = [];   // 已匹配的记录 [{ leftText, rightText, pairId }]
+    let selectedSide = null; // 'left' or 'right'
+    let selectedId = null;
+    let totalPairs = PAIRS.length;
+
+    const leftContainer = document.getElementById('leftCards');
+    const rightContainer = document.getElementById('rightCards');
+    const matchedListDiv = document.getElementById('matchedList');
+    const matchedCountSpan = document.getElementById('matchedCount');
+    const totalPairsSpan = document.getElementById('totalPairs');
+    const progressSpan = document.getElementById('progressPercent');
+    const feedbackDiv = document.getElementById('feedbackMsg');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initGame() {
+        // 构建左侧项（全部未匹配）
+        leftItems = PAIRS.map((pair, idx) => ({
+            id: idx,
+            text: pair.left,
+            pairId: idx
+        }));
+        // 构建右侧项并打乱
+        rightItems = PAIRS.map((pair, idx) => ({
+            id: idx,
+            text: pair.right,
+            pairId: idx
+        }));
+        rightItems = shuffleArray([...rightItems]);
+        matchedPairs = [];
+        selectedSide = null;
+        selectedId = null;
+        updateUI();
+        updateStats();
+        feedbackDiv.innerHTML = "✨ 游戏已重置！点击左边一项，再点击右边一项进行配对。";
+    }
+
+    function updateStats() {
+        const matchedCount = matchedPairs.length;
+        matchedCountSpan.innerText = matchedCount;
+        totalPairsSpan.innerText = totalPairs;
+        let percent = Math.round((matchedCount / totalPairs) * 100);
+        progressSpan.innerText = percent;
+        if (matchedCount === totalPairs) {
+            showWinToast("🎉 恭喜！数列知识全部掌握！ 🎉");
+            feedbackDiv.innerHTML = "🏆 完美通关！点击「重新洗牌」再来一局吧 🏆";
+        }
+    }
+
+    function showWinToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'win-toast';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+
+    // 渲染左右两侧未匹配的卡片
+    function updateGameBoard() {
+        // 左侧
+        leftContainer.innerHTML = '';
+        leftItems.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            if (selectedSide === 'left' && selectedId === item.id) card.classList.add('selected');
+            card.textContent = item.text;
+            card.onclick = () => handleLeftClick(item.id);
+            leftContainer.appendChild(card);
+        });
+        // 右侧
+        rightContainer.innerHTML = '';
+        rightItems.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            if (selectedSide === 'right' && selectedId === item.id) card.classList.add('selected');
+            card.textContent = item.text;
+            card.onclick = () => handleRightClick(item.id);
+            rightContainer.appendChild(card);
+        });
+    }
+
+    // 渲染下方配对记录区
+    function updateMatchedArea() {
+        if (matchedPairs.length === 0) {
+            matchedListDiv.innerHTML = '<div style="color:#b87a3a; text-align:center; width:100%;">暂无配对，快来挑战吧！</div>';
+            return;
+        }
+        let html = '';
+        matchedPairs.forEach((pair, idx) => {
+            html += `
+                <div class="matched-item">
+                    <span class="matched-pair">${pair.leftText}</span>
+                    <span class="matched-arrow">➡️</span>
+                    <span class="matched-pair">${pair.rightText}</span>
+                </div>
+            `;
+        });
+        matchedListDiv.innerHTML = html;
+    }
+
+    function updateUI() {
+        updateGameBoard();
+        updateMatchedArea();
+    }
+
+    function handleLeftClick(id) {
+        if (matchedPairs.length === totalPairs) {
+            feedbackDiv.innerHTML = "🏆 已经通关啦！点击「重新洗牌」继续挑战。";
+            return;
+        }
+        const item = leftItems.find(i => i.id === id);
+        if (!item) return;
+
+        if (selectedSide === 'right') {
+            const rightItem = rightItems.find(i => i.id === selectedId);
+            if (rightItem) {
+                attemptMatch(item, rightItem);
+            } else {
+                clearSelected();
+                selectedSide = 'left';
+                selectedId = id;
+                updateUI();
+                feedbackDiv.innerHTML = `👉 已选中左侧：${item.text}，再点击右侧对应项。`;
+            }
+        } else {
+            clearSelected();
+            selectedSide = 'left';
+            selectedId = id;
+            updateUI();
+            feedbackDiv.innerHTML = `👉 已选中左侧：${item.text}，再点击右侧对应项。`;
+        }
+    }
+
+    function handleRightClick(id) {
+        if (matchedPairs.length === totalPairs) {
+            feedbackDiv.innerHTML = "🏆 已经通关啦！点击「重新洗牌」继续挑战。";
+            return;
+        }
+        const item = rightItems.find(i => i.id === id);
+        if (!item) return;
+
+        if (selectedSide === 'left') {
+            const leftItem = leftItems.find(i => i.id === selectedId);
+            if (leftItem) {
+                attemptMatch(leftItem, item);
+            } else {
+                clearSelected();
+                selectedSide = 'right';
+                selectedId = id;
+                updateUI();
+                feedbackDiv.innerHTML = `👉 已选中右侧：${item.text}，再点击左侧对应项。`;
+            }
+        } else {
+            clearSelected();
+            selectedSide = 'right';
+            selectedId = id;
+            updateUI();
+            feedbackDiv.innerHTML = `👉 已选中右侧：${item.text}，再点击左侧对应项。`;
+        }
+    }
+
+    function attemptMatch(leftItem, rightItem) {
+        if (leftItem.pairId === rightItem.pairId) {
+            // 配对成功：从待匹配列表中移除，加入配对记录
+            const leftIndex = leftItems.findIndex(i => i.id === leftItem.id);
+            const rightIndex = rightItems.findIndex(i => i.id === rightItem.id);
+            if (leftIndex !== -1) leftItems.splice(leftIndex, 1);
+            if (rightIndex !== -1) rightItems.splice(rightIndex, 1);
+            matchedPairs.push({
+                leftText: leftItem.text,
+                rightText: rightItem.text,
+                pairId: leftItem.pairId
+            });
+            clearSelected();
+            updateUI();
+            updateStats();
+            feedbackDiv.innerHTML = `✅ 配对成功！ “${leftItem.text}” ↔ “${rightItem.text}” 已移入记录区 ✅`;
+            if (matchedPairs.length === totalPairs) {
+                updateUI();
+            }
+        } else {
+            clearSelected();
+            updateUI();
+            feedbackDiv.innerHTML = `❌ 配对失败：“${leftItem.text}” 和 “${rightItem.text}” 不匹配，再试试看！❌`;
+        }
+    }
+
+    function clearSelected() {
+        selectedSide = null;
+        selectedId = null;
+    }
+
+    resetBtn.addEventListener('click', initGame);
+    initGame();
+</script>
+</body>
+</html>
